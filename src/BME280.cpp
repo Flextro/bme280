@@ -14,42 +14,37 @@
   Written by Limor Fried & Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
+//Modified by Christian Tamburilla for use in (MOA) @ BrunoAir
+//I2C functionality removed & code reduced to barebones
+
 #include "Arduino.h"
-//#include <Wire.h>
 #include <SPI.h>
 #include "BME280.h"
 
 #define SEALEVELPRESSURE_HPA (1013.25)
-
-/***************************************************************************
- PRIVATE FUNCTIONS
- ***************************************************************************/
-
 
 
 BME280::BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin) : _cs(cspin), _mosi(mosipin), _miso(misopin), _sck(sckpin)
 { }
 
 
-bool BME280::begin(uint8_t a) {
-  _i2caddr = a;
+bool BME280::init()
+{
 
-  if (_cs == -1) {
-    // i2c
-    Wire.begin();
-  } else {
-    digitalWrite(_cs, HIGH);
-    pinMode(_cs, OUTPUT);
+  digitalWrite(_cs, HIGH);
+  pinMode(_cs, OUTPUT);
 
-    if (_sck == -1) {
-      // hardware SPI
-      SPI.begin();
-    } else {
-      // software SPI
-      pinMode(_sck, OUTPUT);
-      pinMode(_mosi, OUTPUT);
-      pinMode(_miso, INPUT);
-    }
+  if (_sck == -1)
+  {
+    // hardware SPI
+    SPI.begin();
+  }
+  else
+  {
+    // software SPI
+    pinMode(_sck, OUTPUT);
+    pinMode(_mosi, OUTPUT);
+    pinMode(_miso, INPUT);
   }
 
   if (read8(BME280_REGISTER_CHIPID) != 0x60)
@@ -64,12 +59,12 @@ bool BME280::begin(uint8_t a) {
   return true;
 }
 
-uint8_t BME280::spixfer(uint8_t x) {
+uint8_t BME280::spixfer(uint8_t x)
+{
   if (_sck == -1)
     return SPI.transfer(x);
 
   // software spi
-  //Serial.println("Software SPI");
   uint8_t reply = 0;
   for (int i=7; i>=0; i--) {
     reply <<= 1;
@@ -82,21 +77,8 @@ uint8_t BME280::spixfer(uint8_t x) {
   return reply;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Writes an 8 bit value over I2C/SPI
-*/
-/**************************************************************************/
 void BME280::write8(byte reg, byte value)
 {
-  
-  if (_cs == -1) {
-    Wire.beginTransmission((uint8_t)_i2caddr);
-    Wire.write((uint8_t)reg);
-    Wire.write((uint8_t)value);
-    Wire.endTransmission();
-  } else {
-    
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
     digitalWrite(_cs, LOW);
@@ -105,26 +87,12 @@ void BME280::write8(byte reg, byte value)
     digitalWrite(_cs, HIGH);
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
-  }
 }
 
-/**************************************************************************/
-/*!
-    @brief  Reads an 8 bit value over I2C
-*/
-/**************************************************************************/
 uint8_t BME280::read8(byte reg)
 {
   uint8_t value;
 
-  if (_cs == -1) {
-    Wire.beginTransmission((uint8_t)_i2caddr);
-    Wire.write((uint8_t)reg);
-    Wire.endTransmission();
-    Wire.requestFrom((uint8_t)_i2caddr, (byte)1);
-    value = Wire.read();
-
-  } else {
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
     digitalWrite(_cs, LOW);
@@ -133,27 +101,14 @@ uint8_t BME280::read8(byte reg)
     digitalWrite(_cs, HIGH);
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
-  }
+
   return value;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Reads a 16 bit value over I2C
-*/
-/**************************************************************************/
 uint16_t BME280::read16(byte reg)
 {
   uint16_t value;
 
-  if (_cs == -1) {
-    Wire.beginTransmission((uint8_t)_i2caddr);
-    Wire.write((uint8_t)reg);
-    Wire.endTransmission();
-    Wire.requestFrom((uint8_t)_i2caddr, (byte)2);
-    value = (Wire.read() << 8) | Wire.read();
-
-  } else {
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
     digitalWrite(_cs, LOW);
@@ -162,7 +117,6 @@ uint16_t BME280::read16(byte reg)
     digitalWrite(_cs, HIGH);
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
-  }
 
   return value;
 }
@@ -173,11 +127,6 @@ uint16_t BME280::read16_LE(byte reg) {
 
 }
 
-/**************************************************************************/
-/*!
-    @brief  Reads a signed 16 bit value over I2C
-*/
-/**************************************************************************/
 int16_t BME280::readS16(byte reg)
 {
   return (int16_t)read16(reg);
@@ -191,29 +140,10 @@ int16_t BME280::readS16_LE(byte reg)
 }
 
 
-/**************************************************************************/
-/*!
-    @brief  Reads a 24 bit value over I2C
-*/
-/**************************************************************************/
-
 uint32_t BME280::read24(byte reg)
 {
   uint32_t value;
 
-  if (_cs == -1) {
-    Wire.beginTransmission((uint8_t)_i2caddr);
-    Wire.write((uint8_t)reg);
-    Wire.endTransmission();
-    Wire.requestFrom((uint8_t)_i2caddr, (byte)3);
-    
-    value = Wire.read();
-    value <<= 8;
-    value |= Wire.read();
-    value <<= 8;
-    value |= Wire.read();
-
-  } else {
     if (_sck == -1)
       SPI.beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
     digitalWrite(_cs, LOW);
@@ -228,17 +158,10 @@ uint32_t BME280::read24(byte reg)
     digitalWrite(_cs, HIGH);
     if (_sck == -1)
       SPI.endTransaction();              // release the SPI bus
-  }
 
   return value;
 }
 
-
-/**************************************************************************/
-/*!
-    @brief  Reads the factory-set coefficients
-*/
-/**************************************************************************/
 void BME280::readCoefficients(void)
 {
     _bme280_calib.dig_T1 = read16_LE(BME280_REGISTER_DIG_T1);
@@ -263,11 +186,7 @@ void BME280::readCoefficients(void)
     _bme280_calib.dig_H6 = (int8_t)read8(BME280_REGISTER_DIG_H6);
 }
 
-/**************************************************************************/
-/*!
 
-*/
-/**************************************************************************/
 float BME280::readTemperature(void)
 {
   int32_t var1, var2;
@@ -290,11 +209,7 @@ float BME280::readTemperature(void)
   return _temp;
 }
 
-/**************************************************************************/
-/*!
 
-*/
-/**************************************************************************/
 float BME280::readPressure(void) {
   int64_t var1, var2, p;
 
@@ -326,11 +241,6 @@ float BME280::readPressure(void) {
 }
 
 
-/**************************************************************************/
-/*!
-
-*/
-/**************************************************************************/
 float BME280::readHumidity(void) {
 
   readTemperature(); // must be done first to get t_fine
@@ -357,23 +267,9 @@ float BME280::readHumidity(void) {
   return  _humidity;
 }
 
-/**************************************************************************/
-/*!
-    Calculates the altitude (in meters) from the specified atmospheric
-    pressure (in hPa), and sea-level pressure (in hPa).
 
-    @param  seaLevel      Sea-level pressure in hPa
-    @param  atmospheric   Atmospheric pressure in hPa
-*/
-/**************************************************************************/
 float BME280::readAltitude(float seaLevel)
 {
-  // Equation taken from BMP180 datasheet (page 16):
-  //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
-
-  // Note that using the equation from wikipedia can give bad results
-  // at high altitude.  See this thread for more information:
-  //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
 
   float atmospheric = readPressure() / 100.0F;
   _altitude = 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));

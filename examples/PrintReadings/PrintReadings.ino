@@ -31,10 +31,12 @@ BME280 sensor(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 void setup() {
   Serial.begin(9600);
 
-  //Thoughts on keeping check below?
-  if (!sensor.begin()) {
+  
+  if (!sensor.init()) {
     Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
+  }
+  
 }
 
 void loop() {
