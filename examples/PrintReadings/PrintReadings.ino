@@ -21,6 +21,7 @@
 #include <Sensor.h>
 #include <BME280.h>
 
+//Standard SPI pin positions
 #define BME_SCK 13
 #define BME_MISO 12
 #define BME_MOSI 11
@@ -30,33 +31,23 @@ BME280 sensor(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
 void setup() {
   Serial.begin(9600);
-
-  
-  if (!sensor.init()) {
-    Serial.println("Could not find a valid BME280 sensor, check wiring!");
-    while (1);
-  }
-  
+  sensor.init();
 }
 
 void loop() {
-
     Serial.print("TEMP: ");
     Serial.print(sensor.getTemp());
     Serial.println(" °F");
-
     Serial.print("PRESSURE: ");
     Serial.print(sensor.getPressure());
     Serial.println(" hPa");
-
     Serial.print("Approx. Altitude: ");
     Serial.print(sensor.getAltitude());
     Serial.println(" m");
-
     Serial.print("Humidity: ");
     Serial.print(sensor.getHumidity());
     Serial.println(" %");
-
     Serial.println();
+    
     delay(2000);
 }

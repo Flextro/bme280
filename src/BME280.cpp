@@ -14,8 +14,11 @@
   Written by Limor Fried & Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
-//Modified by Christian Tamburilla for use in (MOA) @ BrunoAir
-//I2C functionality removed & code reduced to barebones
+
+/*
+ * Redesigned by Christian Tamburilla for use in (MOA) @ BrunoAir
+ * I2C functionality removed & code reduced to barebones
+ */
 
 #include "Arduino.h"
 #include <SPI.h>
@@ -24,8 +27,7 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 
-BME280::BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin) : _cs(cspin), _mosi(mosipin), _miso(misopin), _sck(sckpin)
-{ }
+BME280::BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin) : _cs(cspin), _mosi(mosipin), _miso(misopin), _sck(sckpin) { }
 
 
 bool BME280::init()
@@ -210,7 +212,8 @@ float BME280::readTemperature(void)
 }
 
 
-float BME280::readPressure(void) {
+float BME280::readPressure(void)
+{
   int64_t var1, var2, p;
 
   readTemperature(); // must be done first to get t_fine
@@ -241,7 +244,8 @@ float BME280::readPressure(void) {
 }
 
 
-float BME280::readHumidity(void) {
+float BME280::readHumidity(void)
+{
 
   readTemperature(); // must be done first to get t_fine
 

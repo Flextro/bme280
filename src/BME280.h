@@ -10,8 +10,12 @@
  Written by Limor Fried & Kevin Townsend for Adafruit Industries.
  BSD license, all text above must be included in any redistribution
  ***************************************************************************/
-//Modified by Christian Tamburilla for use in (MOA) @ BrunoAir
-//I2C functionality removed & code reduced to barebones
+
+/*
+ * Redesigned by Christian Tamburilla for use in (MOA) @ BrunoAir
+ * I2C functionality removed & code reduced to barebones
+ */
+
 
 #ifndef __BME280_H__
 #define __BME280_H__
@@ -21,21 +25,17 @@
 #include <Sensor.h>
 #include <Wire.h>
 
-/*=========================================================================
- I2C ADDRESS/BITS
- -----------------------------------------------------------------------*/
-//#define BME280_ADDRESS                (0x77)
-/*=========================================================================*/
-
-/*=========================================================================
- REGISTERS
- -----------------------------------------------------------------------*/
+/*
+ * REGISTERS
+ */
 enum
 {
+  //Temperature
   BME280_REGISTER_DIG_T1              = 0x88,
   BME280_REGISTER_DIG_T2              = 0x8A,
   BME280_REGISTER_DIG_T3              = 0x8C,
   
+  //Pressure
   BME280_REGISTER_DIG_P1              = 0x8E,
   BME280_REGISTER_DIG_P2              = 0x90,
   BME280_REGISTER_DIG_P3              = 0x92,
@@ -46,6 +46,7 @@ enum
   BME280_REGISTER_DIG_P8              = 0x9C,
   BME280_REGISTER_DIG_P9              = 0x9E,
   
+  //Humidity
   BME280_REGISTER_DIG_H1              = 0xA1,
   BME280_REGISTER_DIG_H2              = 0xE1,
   BME280_REGISTER_DIG_H3              = 0xE3,
@@ -67,17 +68,17 @@ enum
   BME280_REGISTER_HUMIDDATA          = 0xFD,
 };
 
-/*=========================================================================*/
-
-/*=========================================================================
- CALIBRATION DATA
- -----------------------------------------------------------------------*/
+/*
+ * CALIBRATION DATA
+ */
 typedef struct
 {
+  //Temperature Compensation
   uint16_t dig_T1;
   int16_t  dig_T2;
   int16_t  dig_T3;
   
+  //Pressure Compensation
   uint16_t dig_P1;
   int16_t  dig_P2;
   int16_t  dig_P3;
@@ -88,6 +89,7 @@ typedef struct
   int16_t  dig_P8;
   int16_t  dig_P9;
   
+  //Humidity Compensation
   uint8_t  dig_H1;
   int16_t  dig_H2;
   uint8_t  dig_H3;
@@ -95,7 +97,7 @@ typedef struct
   int16_t  dig_H5;
   int8_t   dig_H6;
 } bme280_calib_data;
-/*=========================================================================*/
+
 
 class BME280
 {
@@ -103,12 +105,9 @@ public:
   BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
   
   
-  uint8_t getTemp();
-  uint8_t getPressure();
-  uint8_t getAltitude();
-  uint8_t getHumidity();
   
   bool  init();
+  
   float readTemperature(void);
   float readPressure(void);
   float readHumidity(void);
@@ -128,6 +127,17 @@ public:
    * http://forums.adafruit.com/viewtopic.php?f=22&t=58064
    */
   float readAltitude(float seaLevel);
+  
+  
+  /**
+   *  Getters
+   *
+   *  @return runs read methods and gives metrics
+   */
+  uint8_t getTemp();
+  uint8_t getPressure();
+  uint8_t getAltitude();
+  uint8_t getHumidity();
   
 private:
   
@@ -168,7 +178,7 @@ private:
    */
   void readCoefficients(void);
   
-  //uint8_t   _i2caddr;
+  
   int32_t   _sensorID;
   int32_t t_fine;
   
