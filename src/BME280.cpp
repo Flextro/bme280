@@ -123,7 +123,8 @@ uint16_t BME280::read16(byte reg)
   return value;
 }
 
-uint16_t BME280::read16_LE(byte reg) {
+uint16_t BME280::read16_LE(byte reg)
+{
   uint16_t temp = read16(reg);
   return (temp >> 8) | (temp << 8);
 

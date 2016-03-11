@@ -17,8 +17,8 @@
  */
 
 
-#ifndef __BME280_H__
-#define __BME280_H__
+#ifndef _BME280_H_
+#define _BME280_H_
 
 #include "Arduino.h"
 
@@ -104,8 +104,7 @@ class BME280
 public:
   BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
   
-  
-  
+
   bool  init();
   
   float readTemperature(void);
@@ -117,7 +116,6 @@ public:
    * pressure (in hPa), and sea-level pressure (in hPa).
    *
    * @param  seaLevel      Sea-level pressure in hPa
-   * @param  atmospheric   Atmospheric pressure in hPa
    *
    * Equation taken from BMP180 datasheet (page 16):
    * http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
@@ -132,7 +130,7 @@ public:
   /**
    *  Getters
    *
-   *  @return runs read methods and gives metrics
+   *  @return performs read methods and retrieves metrics
    */
   uint8_t getTemp();
   uint8_t getPressure();
@@ -141,11 +139,19 @@ public:
   
 private:
   
+  //SPI values defined in the sketch, set in the constructor
+  uint8_t _cs, _mosi, _miso, _sck;
+  
   uint8_t _temp;
   uint8_t _pressure;
   uint8_t _altitude;
   uint8_t _humidity;
   
+  /*
+   *  Handles bitshifting
+   *
+   *  @param x is the data to transfer / shift
+   */
   uint8_t spixfer(uint8_t x);
   
   /*
@@ -169,7 +175,9 @@ private:
    */
   int16_t   readS16(byte reg);
   
-  // little endian
+  /*
+   * @brief  Reads for 16 bit little endian notation over SPI
+   */
   uint16_t  read16_LE(byte reg);
   int16_t   readS16_LE(byte reg);
   
@@ -179,12 +187,13 @@ private:
   void readCoefficients(void);
   
   
-  int32_t   _sensorID;
+  //Adds calibration data in the readTemperature method, also accessed in readPressure
   int32_t t_fine;
   
-  uint8_t _cs, _mosi, _miso, _sck;
-  
+  //Calibration struct data value
   bme280_calib_data _bme280_calib;
+  
+  
   
 };
 
