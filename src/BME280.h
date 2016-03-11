@@ -23,7 +23,6 @@
 #include "Arduino.h"
 
 #include <Sensor.h>
-#include <Wire.h>
 
 /*
  * REGISTERS
@@ -98,7 +97,9 @@ typedef struct
   int8_t   dig_H6;
 } bme280_calib_data;
 
-
+/*
+ * Constructor
+ */
 class BME280
 {
 public:
