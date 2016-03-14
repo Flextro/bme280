@@ -29,12 +29,14 @@
 
 BME280 sensor(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
-void setup() {
+void setup() 
+{
   Serial.begin(9600);
   sensor.init();
 }
 
-void loop() {
+void loop() 
+{
     Serial.print("TEMP: ");
     Serial.print(sensor.getTemp());
     Serial.println(" °F");

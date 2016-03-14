@@ -21,7 +21,6 @@
 #define _BME280_H_
 
 #include "Arduino.h"
-
 #include <Sensor.h>
 
 /*
