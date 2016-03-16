@@ -23,8 +23,8 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 
-BME280::BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin) : _cs(cspin), _mosi(mosipin), _miso(misopin), _sck(sckpin) { }
-
+BME280::BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin) : _cs(cspin), _mosi(mosipin), _miso(misopin), _sck(sckpin), _sensorID(-1) { }
+BME280::~BME280() {}
 
 bool BME280::init()
 {
@@ -299,4 +299,40 @@ uint8_t BME280::getHumidity()
 {
   readHumidity();
   return _humidity;
+}
+
+/*
+ @brief  Gets the most recent sensor event
+ */
+bool BME280::getEvent(sensors_event_t *event)
+{
+  /* Clear the event */
+  memset(event, 0, sizeof(sensors_event_t));
+  
+  //store values
+  event->version   = sizeof(sensors_event_t);
+  event->sensor_id = _sensorID;
+  event->type      = SENSOR_TYPE_BME280;
+  event->timestamp = 0;
+
+}
+
+/*
+ @brief  Gets the sensor_t data
+ */
+void BME280::getSensor(sensor_t *sensor)
+{
+  // Clear sensor_t
+  memset(sensor, 0, sizeof(sensor_t));
+  
+  // store values
+  strncpy (sensor->name, "BME280", sizeof(sensor->name) - 1);
+  sensor->name[sizeof(sensor->name)- 1] = 0;
+  sensor->version     = 1;
+  sensor->sensor_id   = _sensorID;
+  sensor->type        = SENSOR_TYPE_BME280;
+  sensor->min_delay   = 0;
+  sensor->max_value   = 0;
+  sensor->min_value   = 0;
+  sensor->resolution  = 0;
 }

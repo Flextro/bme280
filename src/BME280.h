@@ -99,10 +99,11 @@ typedef struct
 /*
  * Constructor
  */
-class BME280
+class BME280 : public Sensor
 {
 public:
   BME280(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
+  ~BME280();
   
 
   bool  init();
@@ -137,6 +138,12 @@ public:
   uint8_t getAltitude();
   uint8_t getHumidity();
   
+  /*
+   * @brief Sensor.h enums for types
+   */
+  bool getEvent(sensors_event_t *event);
+  void getSensor(sensor_t *sensor);
+
 private:
   
   //SPI values defined in the sketch, set in the constructor
@@ -194,6 +201,8 @@ private:
   bme280_calib_data _bme280_calib;
   
   
+  //Used in getEvent & getSensor
+  int32_t _sensorID;
   
 };
 
