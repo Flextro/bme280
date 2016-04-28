@@ -159,7 +159,6 @@ void init()
 }
 
 
-uint32_t t_fine; //must be global
 uint32_t readTemperature(void)
 {
   int32_t adc_T = read24(BME280_REGISTER_TEMPDATA);
@@ -178,14 +177,87 @@ uint32_t readTemperature(void)
   t_fine = var1 + var2;
   
   float T  = (t_fine * 5 + 128) >> 8;
-  
+
   return T/100;
 }
 
-//TODO: readPressure();
-//TODO: readHumidity();
-//TODO: readAltitude();
 
+int32_t readPressure(void)
+{
+  int64_t var1, var2, p;
+  
+  readTemperature(); // must be done first to get t_fine
+  
+  int32_t adc_P = read24(BME280_REGISTER_PRESSUREDATA);
+  
+  adc_P >>= 4;
+  
+  var1 = ((int64_t)t_fine) - 128000;
+  var2 = var1 * var1 * (int64_t)_bme280_calib.dig_P6;
+  var2 = var2 + ((var1*(int64_t)_bme280_calib.dig_P5)<<17);
+  var2 = var2 + (((int64_t)_bme280_calib.dig_P4)<<35);
+  var1 = ((var1 * var1 * (int64_t)_bme280_calib.dig_P3)>>8) +
+  ((var1 * (int64_t)_bme280_calib.dig_P2)<<12);
+  var1 = (((((int64_t)1)<<47)+var1))*((int64_t)_bme280_calib.dig_P1)>>33;
+  
+  if (var1 == 0) {
+    return 0;  // avoid exception caused by division by zero
+  }
+  
+  p = 1048576 - adc_P;
+  p = (((p<<31) - var2)*3125) / var1;
+  var1 = (((int64_t)_bme280_calib.dig_P9) * (p>>13) * (p>>13)) >> 25;
+  var2 = (((int64_t)_bme280_calib.dig_P8) * p) >> 19;
+  
+  p = ((p + var1 + var2) >> 8) + (((int64_t)_bme280_calib.dig_P7)<<4);
+  
+  return (float)p/256;
+}
+
+int32_t readHumidity(void)
+{
+  
+  readTemperature(); // must be done first to get t_fine
+  
+  int32_t adc_H = read16(BME280_REGISTER_HUMIDDATA);
+  
+  int32_t v_x1_u32r;
+  
+  v_x1_u32r = (t_fine - ((int32_t)76800));
+  
+  v_x1_u32r = (((((adc_H << 14) - (((int32_t)_bme280_calib.dig_H4) << 20) -
+                  (((int32_t)_bme280_calib.dig_H5) * v_x1_u32r)) + ((int32_t)16384)) >> 15) *
+               (((((((v_x1_u32r * ((int32_t)_bme280_calib.dig_H6)) >> 10) *
+                    (((v_x1_u32r * ((int32_t)_bme280_calib.dig_H3)) >> 11) + ((int32_t)32768))) >> 10) +
+                  ((int32_t)2097152)) * ((int32_t)_bme280_calib.dig_H2) + 8192) >> 14));
+  
+  v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) *
+                             ((int32_t)_bme280_calib.dig_H1)) >> 4));
+  
+  v_x1_u32r = (v_x1_u32r < 0) ? 0 : v_x1_u32r;
+  v_x1_u32r = (v_x1_u32r > 419430400) ? 419430400 : v_x1_u32r;
+  float h = (v_x1_u32r>>12);
+  return  h / 1024.0;
+}
+
+int32_t readAltitude(float seaLevel)
+{
+  // Equation taken from BMP180 datasheet (page 16):
+  //  http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
+  
+  // Note that using the equation from wikipedia can give bad results
+  // at high altitude.  See this thread for more information:
+  //  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
+  
+  float atmospheric = readPressure() / 100.0F;
+  
+  char buf[10];
+  sprintf(buf, " %d ", (int)atmospheric);
+  uart_puts(buf);
+  uart_puts(" ");
+  
+  return 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));
+}
 
 int main(void)
 {
@@ -197,12 +269,25 @@ int main(void)
 
     for(;;)
     {
-      uint32_t foo = readTemperature();
-      
+      uint32_t a = readTemperature();
+      uint32_t b = readPressure();
+      uint32_t c = readHumidity();
+      uint32_t d = readAltitude(1013.25);
       
       char buf[10];
-      itoa( foo, buf, 10);
+      itoa( a, buf, 10);
       uart_puts(buf);
+      uart_puts(" ");
+      itoa( b, buf, 10);
+      uart_puts(buf);
+      uart_puts(" ");
+      itoa( c, buf, 10);
+      uart_puts(buf);
+      uart_puts(" ");
+      itoa( d, buf, 10);
+      uart_puts(buf);
+      uart_puts("\n\r");
+      */
       
       PORTB = 0xFF;
       _delay_ms(500);

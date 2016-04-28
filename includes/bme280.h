@@ -77,7 +77,12 @@ enum
 
   
 void init(void);
+
+uint32_t t_fine; //must be global
 uint32_t readTemperature(void);
+int32_t readPressure(void);
+int32_t readHumidity(void);
+int32_t readAltitude(float seaLevel);
 
 void readCoefficients(void);
 
