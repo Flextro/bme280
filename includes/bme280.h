@@ -9,6 +9,12 @@
 #ifndef bme280_h
 #define bme280_h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <avr/io.h>
+#include <util/delay.h>
+#include <uart.h>
+#include <i2c_master.h>
 
 #define BME280_ADDRESS                (0x77)
 
@@ -79,12 +85,12 @@ enum
 void init(void);
 
 uint32_t t_fine; //must be global
-uint32_t readTemperature(void);
-int32_t readPressure(void);
-int32_t readHumidity(void);
-int32_t readAltitude(float seaLevel);
+float bme280_readTemperature(void);
+float bme280_readPressure(void);
+float bme280_readHumidity(void);
+float bme280_readAltitude(float seaLevel);
 
-void readCoefficients(void);
+void bme280_readCoefficients(void);
 
 uint16_t read8(uint8_t reg);
 uint16_t read16(uint8_t reg);
